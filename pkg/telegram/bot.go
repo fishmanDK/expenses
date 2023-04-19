@@ -2,6 +2,8 @@ package telegram
 
 import (
 	"fmt"
+	"strconv"
+
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
@@ -68,6 +70,8 @@ func ifAddPurchase(bt BotConfig, update tgbotapi.Update){
 			panic(err)
 		}
 		fmt.Println(update.Message.Chat.UserName, update.Message.Chat.ID, update.Message.Text)
+
+		continuationPurchase(bt)
 	}
 }
 
@@ -84,6 +88,49 @@ func continuationCategory(bt BotConfig){
 				fmt.Println(update.Message.Chat.UserName, update.Message.Chat.ID, update.Message.Text)
 			}
 		break
+		}
+	}
+}
+
+func continuationPurchase(bt BotConfig){
+	for update := range bt.Updates {
+		if update.Message != nil{
+			if update.Message.Text != ""{
+				message := tgbotapi.NewMessage(update.Message.Chat.ID, "Теперь его цену")
+				_, err := bt.Bot.Send(message)
+				if err != nil {
+					panic(err)
+				}
+				fmt.Println(update.Message.Chat.UserName, update.Message.Chat.ID, update.Message.Text)
+
+				continuationPrise(bt)
+			}
+		break
+		}
+	}
+}
+
+func continuationPrise(bt BotConfig){
+	for update := range bt.Updates {
+		if update.Message != nil{
+			prise := update.Message.Text
+			if floatPrise, _ := strconv.ParseFloat(prise, 32); floatPrise > 0{
+				message := tgbotapi.NewMessage(update.Message.Chat.ID, "Покупка успешно добавленна")
+				_, err := bt.Bot.Send(message)
+				if err != nil {
+					panic(err)
+				}
+				fmt.Println(update.Message.Chat.UserName, update.Message.Chat.ID, update.Message.Text)
+				break
+
+			} else{
+				message := tgbotapi.NewMessage(update.Message.Chat.ID, "Введите правально цену")
+				_, err := bt.Bot.Send(message)
+				if err != nil {
+					panic(err)
+				}
+				fmt.Println(update.Message.Chat.UserName, update.Message.Chat.ID, update.Message.Text)
+			} 
 		}
 	}
 }
