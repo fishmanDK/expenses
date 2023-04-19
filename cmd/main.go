@@ -2,6 +2,8 @@ package main
 
 import (
 	"log"
+
+	// "github.com/fishmanDK/expenses/pkg/repository"
 	"github.com/fishmanDK/expenses/pkg/telegram"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -18,14 +20,14 @@ func main() {
 	
 	keyboard := tgbotapi.NewReplyKeyboard(
 		tgbotapi.NewKeyboardButtonRow(
-			tgbotapi.NewKeyboardButton("Добавить категорию"),
+			tgbotapi.NewKeyboardButton("Добавить товар"),
 			tgbotapi.NewKeyboardButton("Добавить покупку"),
 		),
 	)
 	updates := bot.GetUpdatesChan(u)
 
 	
-	telegram.MainReply(bot, updates, keyboard)
+	telegram.MainReply(*telegram.NewBotConfig(bot, updates, keyboard))
 
 
 	
