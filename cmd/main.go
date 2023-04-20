@@ -1,14 +1,30 @@
 package main
 
 import (
+	"fmt"
 	"log"
+	"os"
+
+	_ "github.com/lib/pq"
+	"github.com/spf13/viper"
+	"github.com/subosito/gotenv"
 
 	// "github.com/fishmanDK/expenses/pkg/repository"
+	// "github.com/fishmanDK/expenses/pkg/repository"
+	"github.com/fishmanDK/expenses/pkg/repository"
 	"github.com/fishmanDK/expenses/pkg/telegram"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 func main() {
+
+	if err := initConfig(); err != nil{
+		log.Fatalf("problem with config: %s", err.Error())
+	}
+
+	if err := gotenv.Load(); err != nil{
+		log.Fatalf("problem with '.env': %s", err.Error())
+	}
 
 	bot, err := tgbotapi.NewBotAPI("5700090858:AAHjE0mZFZR6z-H9S2pxLu5WhhXPknLDkFA")
 	if err != nil {
@@ -26,9 +42,29 @@ func main() {
 	)
 	updates := bot.GetUpdatesChan(u)
 
-	
+	configDB, err := repository.NewConfigDB(repository.Config{
+		Host: 	  viper.GetString("db.host"),
+		Port: 	  viper.GetString("db.port"),
+		UserName: viper.GetString("db.userName"),
+		Password: os.Getenv("DB_Password"),
+		DBName:   viper.GetString("db.dbName"),
+		SSLMode:  viper.GetString("db.sslMode"),
+	}) 
+
+	if err != nil{
+		log.Fatal("No conection DB")
+	}
+	fmt.Println(configDB)
+
 	telegram.MainReply(*telegram.NewBotConfig(bot, updates, keyboard))
 
 
 	
+}
+
+
+func initConfig() error{
+	viper.AddConfigPath("configs")
+	viper.SetConfigName("config")
+	return viper.ReadInConfig()
 }

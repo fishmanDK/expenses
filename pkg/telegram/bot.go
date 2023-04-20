@@ -11,8 +11,8 @@ type BotConfig struct{
 	Bot      *tgbotapi.BotAPI
 	Updates  tgbotapi.UpdatesChannel
 	Keyboard tgbotapi.ReplyKeyboardMarkup
-	// Update   tgbotapi.Update
 }
+
 
 func NewBotConfig(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel, keyboard tgbotapi.ReplyKeyboardMarkup) *BotConfig{
 	return &BotConfig{
@@ -45,7 +45,7 @@ func ifCommandStart(bt BotConfig, update tgbotapi.Update){
 		if err != nil {
 			panic(err)
 		}
-		fmt.Println(update.Message.Chat.UserName, update.Message.Chat.ID, update.Message.Text)
+		printUserDoc(update)
 	}
 }
 
@@ -56,7 +56,7 @@ func ifAddCategory(bt BotConfig, update tgbotapi.Update){
 		if err != nil {
 			panic(err)
 		}
-		fmt.Println(update.Message.Chat.UserName, update.Message.Chat.ID, update.Message.Text)
+		printUserDoc(update)
 		
 		continuationCategory(bt)
 	}
@@ -69,8 +69,7 @@ func ifAddPurchase(bt BotConfig, update tgbotapi.Update){
 		if err != nil {
 			panic(err)
 		}
-		fmt.Println(update.Message.Chat.UserName, update.Message.Chat.ID, update.Message.Text)
-
+		printUserDoc(update)
 		continuationPurchase(bt)
 	}
 }
@@ -85,8 +84,7 @@ func continuationCategory(bt BotConfig){
 				if err != nil {
 					panic(err)
 				}
-				fmt.Println(update.Message.Chat.UserName, update.Message.Chat.ID, update.Message.Text)
-			}
+				fmt.Println(update.Message.Chat.UserName, update.Message.Chat.FirstName + " " + update.Message.Chat.LastName, update.Message.Chat.ID, update.Message.Text)			}
 		break
 		}
 	}
@@ -101,8 +99,7 @@ func continuationPurchase(bt BotConfig){
 				if err != nil {
 					panic(err)
 				}
-				fmt.Println(update.Message.Chat.UserName, update.Message.Chat.ID, update.Message.Text)
-
+				printUserDoc(update)
 				continuationPrise(bt)
 			}
 		break
@@ -120,7 +117,7 @@ func continuationPrise(bt BotConfig){
 				if err != nil {
 					panic(err)
 				}
-				fmt.Println(update.Message.Chat.UserName, update.Message.Chat.ID, update.Message.Text)
+				printUserDoc(update)
 				break
 
 			} else{
@@ -129,8 +126,12 @@ func continuationPrise(bt BotConfig){
 				if err != nil {
 					panic(err)
 				}
-				fmt.Println(update.Message.Chat.UserName, update.Message.Chat.ID, update.Message.Text)
-			} 
+				printUserDoc(update)
+			}
 		}
 	}
+}
+ 
+func printUserDoc(update tgbotapi.Update) {
+    fmt.Println(update.Message.Chat.UserName, update.Message.Chat.FirstName+" "+update.Message.Chat.LastName, update.Message.Chat.ID, update.Message.Text)
 }
