@@ -5,20 +5,22 @@ import (
 	"strconv"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"github.com/jmoiron/sqlx"
 )
 
 type BotConfig struct{
 	Bot      *tgbotapi.BotAPI
 	Updates  tgbotapi.UpdatesChannel
 	Keyboard tgbotapi.ReplyKeyboardMarkup
+	ConfigDB *sqlx.DB
 }
 
-
-func NewBotConfig(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel, keyboard tgbotapi.ReplyKeyboardMarkup) *BotConfig{
+func NewBotConfig(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel, keyboard tgbotapi.ReplyKeyboardMarkup, configDB *sqlx.DB) *BotConfig{
 	return &BotConfig{
 		Bot: bot,
 		Updates: updates,
 		Keyboard: keyboard,
+		ConfigDB: configDB,
 	}
 }
 
@@ -30,6 +32,8 @@ func MainReply(bt BotConfig){
 			ifAddCategory(bt, update)
 
 			ifAddPurchase(bt, update)
+
+			ifPrintCategoryes(bt, update)
 		}
 	}
 }

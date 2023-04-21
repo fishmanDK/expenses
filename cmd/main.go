@@ -26,7 +26,7 @@ func main() {
 		log.Fatalf("problem with '.env': %s", err.Error())
 	}
 
-	bot, err := tgbotapi.NewBotAPI("5700090858:AAHjE0mZFZR6z-H9S2pxLu5WhhXPknLDkFA")
+	bot, err := tgbotapi.NewBotAPI(os.Getenv("tele_token"))
 	if err != nil {
 		log.Panic(err)
 	}
@@ -38,6 +38,7 @@ func main() {
 		tgbotapi.NewKeyboardButtonRow(
 			tgbotapi.NewKeyboardButton("Добавить товар"),
 			tgbotapi.NewKeyboardButton("Добавить покупку"),
+			tgbotapi.NewKeyboardButton("Вывести список продуктов"),
 		),
 	)
 	updates := bot.GetUpdatesChan(u)
@@ -54,11 +55,12 @@ func main() {
 	if err != nil{
 		log.Fatal("No conection DB")
 	}
+	
+
+
 	fmt.Println(configDB)
 
-	telegram.MainReply(*telegram.NewBotConfig(bot, updates, keyboard))
-
-
+	telegram.MainReply(*telegram.NewBotConfig(bot, updates, keyboard, configDB))
 	
 }
 
