@@ -2,6 +2,7 @@ package telegram
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -29,11 +30,11 @@ func MainReply(bt BotConfig){
 		if update.Message != nil{
 			ifCommandStart(bt, update)
 
-			ifAddCategory(bt, update)
+			ifAddProduct(bt, update)
 
 			ifAddPurchase(bt, update)
 
-			ifPrintCategoryes(bt, update)
+			ifPrintProductsINCategory(bt, update)
 		}
 	}
 }
@@ -53,16 +54,16 @@ func ifCommandStart(bt BotConfig, update tgbotapi.Update){
 	}
 }
 
-func ifAddCategory(bt BotConfig, update tgbotapi.Update){
+func ifAddProduct(bt BotConfig, update tgbotapi.Update){
 	if update.Message.Text == "Добавить товар"{
-		message := tgbotapi.NewMessage(update.Message.Chat.ID, "Как он называется")
+		message := tgbotapi.NewMessage(update.Message.Chat.ID, "Выбирете категорию")
 		_, err := bt.Bot.Send(message)
 		if err != nil {
 			panic(err)
 		}
 		printUserDoc(update)
 		
-		continuationCategory(bt)
+		continuationCategory(bt, update)
 	}
 }
 
@@ -71,7 +72,7 @@ func ifAddPurchase(bt BotConfig, update tgbotapi.Update){
 		message := tgbotapi.NewMessage(update.Message.Chat.ID, "Введите название товара")
 		_, err := bt.Bot.Send(message)
 		if err != nil {
-			panic(err)
+			log.Fatalf("error in ifAddPurchase: %s", err.Error())
 		}
 		printUserDoc(update)
 		continuationPurchase(bt)
@@ -79,7 +80,13 @@ func ifAddPurchase(bt BotConfig, update tgbotapi.Update){
 }
 
 
-func continuationCategory(bt BotConfig){
+func continuationCategory(bt BotConfig, update tgbotapi.Update){
+	categoryKeyboard, _ := printProducts(bt, update.Message.Chat.UserName, update)
+	message := tgbotapi.NewMessage(update.Message.Chat.ID, categoryKeyboard)
+	_, err := bt.Bot.Send(message)
+	if err != nil {
+		panic(err)
+	}
 	for update := range bt.Updates {
 		if update.Message != nil{
 			if update.Message.Text != ""{
@@ -119,7 +126,7 @@ func continuationPrise(bt BotConfig){
 				message := tgbotapi.NewMessage(update.Message.Chat.ID, "Покупка успешно добавленна")
 				_, err := bt.Bot.Send(message)
 				if err != nil {
-					panic(err)
+					log.Panicf("error in continuationPrise: %s", err.Error())
 				}
 				printUserDoc(update)
 				break

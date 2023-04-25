@@ -28,7 +28,7 @@ func main() {
 
 	bot, err := tgbotapi.NewBotAPI(os.Getenv("tele_token"))
 	if err != nil {
-		log.Panic(err)
+		log.Panicf("error in main.go tgbotapi.NewBotAPI: %s", err.Error())
 	}
 
 	u := tgbotapi.NewUpdate(0)
@@ -56,7 +56,7 @@ func main() {
 		log.Fatal("No conection DB")
 	}
 	
-
+	fmt.Println("БД подключенна")
 
 	fmt.Println(configDB)
 

@@ -5,10 +5,20 @@ CREATE TABLE users_list
 	chatID INT NOT NULL
 );
 
+
+CREATE TABLE category
+(
+	id SERIAL NOT NULL PRIMARY KEY,
+	user_id INT REFERENCES users_list(id) ON DELETE CASCADE,
+	category_name varchar(255) NOT NULL 
+);
+
 CREATE TABLE product
 (
 	id SERIAL NOT NULL,
+	category_id INT REFERENCES category(id) ON DELETE CASCADE,
 	user_id INT REFERENCES users_list(id) ON DELETE CASCADE,
-	product_name varchar(255) NOT NULL UNIQUE,
-	price FLOAT NOT NULL
+	product_name varchar(255) NOT NULL,
+	price FLOAT NOT NULL,
+	count INT
 )
