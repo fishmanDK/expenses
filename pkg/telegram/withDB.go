@@ -10,13 +10,14 @@ import (
 // "github.com/fishmanDK/expenses"
 // "github.com/fishmanDK/expenses/pkg/repository"
 type Category struct{
+	ID 			  int  `db:"id"`
 	Category_name string  `db:"category_name"`
 }
 
 
 type Product struct{
 	ID 			 string  `db:"id"`
-	Categoru_id  string  `db:"category_id"`
+	Category_id  string  `db:"category_id"`
 	User_id 	 string  `db:"user_id"`
 	Product_name string  `db:"product_name"`
 	Price		 float32 `db:"price"`
@@ -86,10 +87,11 @@ func printAllProductsWithSelectDB(bt BotConfig, update tgbotapi.Update) (string,
 	allRows += fmt.Sprintf("Список товаров пользователя: %s\n\n\n", update.Message.Chat.UserName)
 	allRows += "Категория: КАТЕГОРИЯ\n\n"
 	product := Product{}
-	rows, err := bt.ConfigDB.Queryx(fmt.Sprintf("SELECT * FROM product WHERE user_id = (SELECT id FROM users_list WHERE chatID = %d)", update.Message.Chat.ID))
+	rows, err := bt.ConfigDB.Queryx(fmt.Sprintf("SELECT * FROM product WHERE user_id = %d", update.Message.Chat.ID))
 	if err != nil{
 		log.Fatalf("error in printAllProductsWithSelectDB(rows): %s", err.Error())
 	}
+	fmt.Println(rows)
 	for rows.Next() {
 		err := rows.StructScan(&product)
 		if err != nil {
@@ -113,28 +115,77 @@ func sumPrice(price float32) float32{
 	return sum
 }
 
+func AddProduct(bt BotConfig, category_id int, user_id int64, product_name string){
 
-func printProducts(bt BotConfig, userName string, update tgbotapi.Update)(string, error){
-	var (
-		allRows string
-	)
 	category := new(Category)
+	fmt.Println("==================")
+	rows, _ := bt.ConfigDB.Queryx(fmt.Sprintf("insert into product (category_id, user_id, product_name, price, count) values (%d, %d, '%s', 10, 1)", category_id, user_id, product_name))
 
-	rows, _ := bt.ConfigDB.Queryx(fmt.Sprintf("SELECT category_name FROM category WHERE user_id = (SELECT id FROM users_list WHERE chatID = %d)", update.Message.Chat.ID))
 
-
-	allRows += fmt.Sprintf("Список категорий пользователя: %s\n\n\n", userName)
 	// allRows += fmt.Sprintf("Категория: %s\n\n", category.Category_name)
 	for rows.Next() {
 		err := rows.StructScan(&category)
 		if err != nil {
 			log.Fatalf("Error in SELECT in table:`product`: %s", err.Error())
-			return " ", err
+		}
+	}
+}
+
+// func printProducts(bt BotConfig, userName string, update tgbotapi.Update)([]string, []int, error){
+// 	var (
+// 		message string
+// 		cagegoryes []string
+// 		ID_categoryes []int
+// 	)
+// 	category := new(Category)
+
+// 	rows, _ := bt.ConfigDB.Queryx(fmt.Sprintf("SELECT category_name FROM category WHERE user_id = (SELECT id FROM users_list WHERE chatID = %d)", update.Message.Chat.ID))
+
+
+// 	message += fmt.Sprintf("Список категорий пользователя: %s\n\n\n", userName)
+// 	// allRows += fmt.Sprintf("Категория: %s\n\n", category.Category_name)
+// 	for rows.Next() {
+// 		err := rows.StructScan(&category)
+// 		if err != nil {
+// 			log.Fatalf("Error in SELECT in table:`product`: %s", err.Error())
+// 			return cagegoryes, ID_categoryes, err
+// 		}
+
+// 		fmt.Printf("%#v\n", category)
+// 		cagegoryes = append(cagegoryes, fmt.Sprintf("%s\n", category.Category_name))
+// 		ID_categoryes = append(ID_categoryes, category.ID)
+
+// 	}
+// 	return cagegoryes, ID_categoryes, nil
+
+// }
+
+
+func printProducts(bt BotConfig, userName string, update tgbotapi.Update)(map[string]int, error){
+	var (
+		message string
+	)
+	cagegoryes := make(map[string]int)
+	category := new(Category)
+
+	rows, err := bt.ConfigDB.Queryx(fmt.Sprintf("SELECT category_name, id FROM category WHERE user_id = %d", update.Message.Chat.ID))
+	if err != nil {
+		log.Fatalf("Error in SELECT in table:`category`: %s", err.Error())
+	}
+
+	message += fmt.Sprintf("Список категорий пользователя: %s\n\n\n", userName)
+	// allRows += fmt.Sprintf("Категория: %s\n\n", category.Category_name)
+	for rows.Next() {
+		err := rows.StructScan(&category)
+		if err != nil {
+			log.Fatalf("Error in SELECT in table:`product`: %s", err.Error())
 		}
 
 		fmt.Printf("%#v\n", category)
-		allRows += fmt.Sprintf("%s\n", category.Category_name)
+		// fmt.Printf("id: %d", category.ID)
+		cagegoryes[category.Category_name] = category.ID
+
 	}
-	return allRows, nil
+	return cagegoryes, nil
 
 }

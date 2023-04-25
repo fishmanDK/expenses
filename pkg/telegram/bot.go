@@ -56,11 +56,7 @@ func ifCommandStart(bt BotConfig, update tgbotapi.Update){
 
 func ifAddProduct(bt BotConfig, update tgbotapi.Update){
 	if update.Message.Text == "Добавить товар"{
-		message := tgbotapi.NewMessage(update.Message.Chat.ID, "Выбирете категорию")
-		_, err := bt.Bot.Send(message)
-		if err != nil {
-			panic(err)
-		}
+		
 		printUserDoc(update)
 		
 		continuationCategory(bt, update)
@@ -81,25 +77,55 @@ func ifAddPurchase(bt BotConfig, update tgbotapi.Update){
 
 
 func continuationCategory(bt BotConfig, update tgbotapi.Update){
+
+	var keyboard tgbotapi.ReplyKeyboardMarkup
 	categoryKeyboard, _ := printProducts(bt, update.Message.Chat.UserName, update)
-	message := tgbotapi.NewMessage(update.Message.Chat.ID, categoryKeyboard)
+	for category_name, _ := range categoryKeyboard {
+		fmt.Println(category_name)
+	    keyboard.Keyboard = append(keyboard.Keyboard, []tgbotapi.KeyboardButton{
+	        tgbotapi.NewKeyboardButton(category_name),
+	    })
+	}
+	message := tgbotapi.NewMessage(update.Message.Chat.ID, "Выбирете категорию")
+	message.ReplyMarkup = keyboard
 	_, err := bt.Bot.Send(message)
 	if err != nil {
-		panic(err)
+	    panic(err)
 	}
+	
 	for update := range bt.Updates {
 		if update.Message != nil{
 			if update.Message.Text != ""{
+				message = tgbotapi.NewMessage(update.Message.Chat.ID, "Введите название товара")
+				_, err = bt.Bot.Send(message)
+				if err != nil {
+					log.Fatalf("error in continuationCategory 'Введите название товара': %s", err.Error())
+				}
+
+				for update_forChatId := range bt.Updates {
+					if update_forChatId.Message != nil{
+						if update_forChatId.Message.Text != ""{
+							fmt.Println(categoryKeyboard[update.Message.Text])
+							AddProduct(bt, categoryKeyboard[update.Message.Text], update.Message.Chat.ID, update_forChatId.Message.Text)
+						}
+					}
+					break
+				}
+				
 				message := tgbotapi.NewMessage(update.Message.Chat.ID, "Товар успешно добавлен")
 				_, err := bt.Bot.Send(message)
 				if err != nil {
 					panic(err)
 				}
-				fmt.Println(update.Message.Chat.UserName, update.Message.Chat.FirstName + " " + update.Message.Chat.LastName, update.Message.Chat.ID, update.Message.Text)			}
-		break
+				fmt.Println(update.Message.Chat.UserName, update.Message.Chat.FirstName + " " + update.Message.Chat.LastName, update.Message.Chat.ID, update.Message.Text)
+			}
+		
 		}
-	}
+		break
+	}	
 }
+
+
 
 func continuationPurchase(bt BotConfig){
 	for update := range bt.Updates {
