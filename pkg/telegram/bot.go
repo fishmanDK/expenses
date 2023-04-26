@@ -28,6 +28,7 @@ func NewBotConfig(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel, keyboar
 func MainReply(bt BotConfig){
 	for update := range bt.Updates {
 		if update.Message != nil{
+
 			ifCommandStart(bt, update)
 
 			ifAddProduct(bt, update)
@@ -59,8 +60,9 @@ func ifAddProduct(bt BotConfig, update tgbotapi.Update){
 		
 		printUserDoc(update)
 		
-		continuationCategory(bt, update)
+		continuationAddProduct(bt, update)
 	}
+
 }
 
 func ifAddPurchase(bt BotConfig, update tgbotapi.Update){
@@ -75,9 +77,7 @@ func ifAddPurchase(bt BotConfig, update tgbotapi.Update){
 	}
 }
 
-
-func continuationCategory(bt BotConfig, update tgbotapi.Update){
-
+func newKeyboardForCategoryes(bt BotConfig, update tgbotapi.Update) map[string]int{
 	var keyboard tgbotapi.ReplyKeyboardMarkup
 	categoryKeyboard, _ := printProducts(bt, update.Message.Chat.UserName, update)
 	for category_name, _ := range categoryKeyboard {
@@ -86,44 +86,103 @@ func continuationCategory(bt BotConfig, update tgbotapi.Update){
 	        tgbotapi.NewKeyboardButton(category_name),
 	    })
 	}
+	keyboard.Keyboard = append(keyboard.Keyboard, []tgbotapi.KeyboardButton{
+		tgbotapi.NewKeyboardButton("Выйти"),
+	})
 	message := tgbotapi.NewMessage(update.Message.Chat.ID, "Выбирете категорию")
 	message.ReplyMarkup = keyboard
 	_, err := bt.Bot.Send(message)
 	if err != nil {
 	    panic(err)
 	}
-	
-	for update := range bt.Updates {
-		if update.Message != nil{
-			if update.Message.Text != ""{
-				message = tgbotapi.NewMessage(update.Message.Chat.ID, "Введите название товара")
-				_, err = bt.Bot.Send(message)
-				if err != nil {
-					log.Fatalf("error in continuationCategory 'Введите название товара': %s", err.Error())
-				}
 
-				for update_forChatId := range bt.Updates {
-					if update_forChatId.Message != nil{
-						if update_forChatId.Message.Text != ""{
-							fmt.Println(categoryKeyboard[update.Message.Text])
-							AddProduct(bt, categoryKeyboard[update.Message.Text], update.Message.Chat.ID, update_forChatId.Message.Text)
-						}
-					}
-					break
-				}
-				
-				message := tgbotapi.NewMessage(update.Message.Chat.ID, "Товар успешно добавлен")
+	return categoryKeyboard
+	
+}
+
+
+func continuationAddProduct(bt BotConfig, update tgbotapi.Update){
+
+	categoryKeyboard := newKeyboardForCategoryes(bt, update)
+
+	workWithAddproduct(bt, categoryKeyboard)
+}
+
+func workWithAddproduct(bt BotConfig, categoryKeyboard map[string]int){
+	for update := range bt.Updates {
+		if update.Message != nil{	
+			if update.Message.Text == "Выйти"{
+				message := tgbotapi.NewMessage(update.Message.Chat.ID, "Возвращаемся в главное меню")
+				message.ReplyMarkup = bt.Keyboard
+		
 				_, err := bt.Bot.Send(message)
 				if err != nil {
 					panic(err)
 				}
-				fmt.Println(update.Message.Chat.UserName, update.Message.Chat.FirstName + " " + update.Message.Chat.LastName, update.Message.Chat.ID, update.Message.Text)
+				break
 			}
-		
+
+			message := tgbotapi.NewMessage(update.Message.Chat.ID, "Введите название товара")
+			message.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
+			_, err := bt.Bot.Send(message)
+			if err != nil {
+				log.Fatalf("error in continuationCategory 'Введите название товара': %s", err.Error())
+			}
+
+			addProduct(bt, update, categoryKeyboard)
+			
+			message = tgbotapi.NewMessage(update.Message.Chat.ID, "Товар успешно добавлен")
+			message.ReplyMarkup = bt.Keyboard
+			_, err = bt.Bot.Send(message)
+			if err != nil {
+				panic(err)
+			}
+			break
+
+
 		}
-		break
-	}	
+	}
 }
+
+func getPrice(bt BotConfig) string {
+    var price string
+    for update := range bt.Updates {
+        if update.Message != nil {
+            price += update.Message.Text
+            return price
+        }
+    }
+    return ""
+}
+
+func addProduct(bt BotConfig, update tgbotapi.Update, categoryKeyboard map[string]int){
+
+
+	// message := tgbotapi.NewMessage(update.Message.Chat.ID, "Теперь его цену")
+	// _, err := bt.Bot.Send(message)
+	// if err != nil {
+	// 	log.Fatalf("error in continuationCategory 'Введите название товара': %s", err.Error())
+	// }
+	// price := getPrice(bt)
+	var nameProduct string
+	for update_forChatId := range bt.Updates {
+		if update_forChatId.Message != nil{
+			nameProduct = update_forChatId.Message.Text
+			break
+			
+		}
+	}
+	message := tgbotapi.NewMessage(update.Message.Chat.ID, "Теперь его цену")
+	_, err := bt.Bot.Send(message)
+	if err != nil {
+		log.Fatalf("error in continuationCategory 'Введите название товара': %s", err.Error())
+	}
+	price := getPrice(bt)
+
+	addProductSQL(bt, categoryKeyboard[update.Message.Text], update.Message.Chat.ID, nameProduct, price)
+
+}
+
 
 
 
@@ -172,3 +231,4 @@ func continuationPrise(bt BotConfig){
 func printUserDoc(update tgbotapi.Update) {
     fmt.Println(update.Message.Chat.UserName, update.Message.Chat.FirstName+" "+update.Message.Chat.LastName, update.Message.Chat.ID, update.Message.Text)
 }
+

@@ -36,13 +36,14 @@ func main() {
 	
 	keyboard := tgbotapi.NewReplyKeyboard(
 		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton("Добавить категорию"),
 			tgbotapi.NewKeyboardButton("Добавить товар"),
 		),
 		tgbotapi.NewKeyboardButtonRow(
 			tgbotapi.NewKeyboardButton("Добавить покупку"),
 		),
 		tgbotapi.NewKeyboardButtonRow(
-			tgbotapi.NewKeyboardButton("Вывести список продуктов"),
+			tgbotapi.NewKeyboardButton("Вывести список продуктов (в категории)"),
 		),
 	)
 	updates := bot.GetUpdatesChan(u)

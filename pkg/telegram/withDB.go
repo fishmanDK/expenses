@@ -47,36 +47,6 @@ func ifPrintProductsINCategory(bt BotConfig, update tgbotapi.Update){
 
 }
 
-// func printAllProductsWithSelectDB(bt BotConfig, update tgbotapi.Update) (string, error){
-	// var (
-	// 	allRows string
-	// 	sum float32
-	// )
-
-
-
-	// allRows += fmt.Sprintf("Список товаров пользователя: %s\n\n\n", update.Message.Chat.UserName)
-	// allRows += "Категория: КАТЕГОРИЯ\n\n"
-	// product := Product{}
-	// rows, _ := bt.ConfigDB.Queryx(fmt.Sprintf("SELECT * FROM product WHERE user_id = (SELECT id FROM users_list WHERE chatID = %d)", update.Message.Chat.ID))
-
-	// allRows += fmt.Sprintf("Список товаров пользователя: %s\n\n\n", update.Message.Chat.UserName)
-	// for rows.Next() {
-	// 	err := rows.StructScan(&product)
-	// 	if err != nil {
-	// 		log.Fatalf("Error in SELECT in table:`product`: %s", err.Error())
-	// 		return " ", err
-	// 	}
-
-	// 	fmt.Printf("%#v\n", product)
-	// 	allRows += fmt.Sprintf("%s: %.2fp.\n", product.Product_name, product.Price)
-
-	// 	sum += sumPrice(product.Price)
-	// }
-	// allRows += fmt.Sprintf("\nОбщая сумма: %.2f", sum)
-	// return allRows, nil
-// }
-
 func printAllProductsWithSelectDB(bt BotConfig, update tgbotapi.Update) (string, error){
 	var (
 		allRows string
@@ -111,18 +81,14 @@ func printAllProductsWithSelectDB(bt BotConfig, update tgbotapi.Update) (string,
 func sumPrice(price float32) float32{
 	var sum float32
 	sum += price
-
 	return sum
 }
 
-func AddProduct(bt BotConfig, category_id int, user_id int64, product_name string){
+func addProductSQL(bt BotConfig, category_id int, user_id int64, product_name string, price string){
 
 	category := new(Category)
-	fmt.Println("==================")
-	rows, _ := bt.ConfigDB.Queryx(fmt.Sprintf("insert into product (category_id, user_id, product_name, price, count) values (%d, %d, '%s', 10, 1)", category_id, user_id, product_name))
+	rows, _ := bt.ConfigDB.Queryx(fmt.Sprintf("insert into product (category_id, user_id, product_name, price, count) values (%d, %d, '%s', %s, 1)", category_id, user_id, product_name, price))
 
-
-	// allRows += fmt.Sprintf("Категория: %s\n\n", category.Category_name)
 	for rows.Next() {
 		err := rows.StructScan(&category)
 		if err != nil {
@@ -131,34 +97,6 @@ func AddProduct(bt BotConfig, category_id int, user_id int64, product_name strin
 	}
 }
 
-// func printProducts(bt BotConfig, userName string, update tgbotapi.Update)([]string, []int, error){
-// 	var (
-// 		message string
-// 		cagegoryes []string
-// 		ID_categoryes []int
-// 	)
-// 	category := new(Category)
-
-// 	rows, _ := bt.ConfigDB.Queryx(fmt.Sprintf("SELECT category_name FROM category WHERE user_id = (SELECT id FROM users_list WHERE chatID = %d)", update.Message.Chat.ID))
-
-
-// 	message += fmt.Sprintf("Список категорий пользователя: %s\n\n\n", userName)
-// 	// allRows += fmt.Sprintf("Категория: %s\n\n", category.Category_name)
-// 	for rows.Next() {
-// 		err := rows.StructScan(&category)
-// 		if err != nil {
-// 			log.Fatalf("Error in SELECT in table:`product`: %s", err.Error())
-// 			return cagegoryes, ID_categoryes, err
-// 		}
-
-// 		fmt.Printf("%#v\n", category)
-// 		cagegoryes = append(cagegoryes, fmt.Sprintf("%s\n", category.Category_name))
-// 		ID_categoryes = append(ID_categoryes, category.ID)
-
-// 	}
-// 	return cagegoryes, ID_categoryes, nil
-
-// }
 
 
 func printProducts(bt BotConfig, userName string, update tgbotapi.Update)(map[string]int, error){
@@ -174,7 +112,6 @@ func printProducts(bt BotConfig, userName string, update tgbotapi.Update)(map[st
 	}
 
 	message += fmt.Sprintf("Список категорий пользователя: %s\n\n\n", userName)
-	// allRows += fmt.Sprintf("Категория: %s\n\n", category.Category_name)
 	for rows.Next() {
 		err := rows.StructScan(&category)
 		if err != nil {
@@ -182,7 +119,6 @@ func printProducts(bt BotConfig, userName string, update tgbotapi.Update)(map[st
 		}
 
 		fmt.Printf("%#v\n", category)
-		// fmt.Printf("id: %d", category.ID)
 		cagegoryes[category.Category_name] = category.ID
 
 	}
