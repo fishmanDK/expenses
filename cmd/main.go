@@ -9,10 +9,10 @@ import (
 	"github.com/spf13/viper"
 	"github.com/subosito/gotenv"
 
-	// "github.com/fishmanDK/expenses/pkg/repository"
-	// "github.com/fishmanDK/expenses/pkg/repository"
 	"github.com/fishmanDK/expenses/pkg/repository"
-	"github.com/fishmanDK/expenses/pkg/telegram"
+	telegram "github.com/fishmanDK/expenses/pkg/telegram"
+	// "github.com/fishmanDK/expenses/pkg/telegram/bot"
+	// "github.com/fishmanDK/expenses/pkg/telegram/DB"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
@@ -41,6 +41,7 @@ func main() {
 		),
 		tgbotapi.NewKeyboardButtonRow(
 			tgbotapi.NewKeyboardButton("Добавить покупку"),
+			tgbotapi.NewKeyboardButton("Вывести все категории"),
 		),
 		tgbotapi.NewKeyboardButtonRow(
 			tgbotapi.NewKeyboardButton("Вывести список продуктов (в категории)"),
