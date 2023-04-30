@@ -1,0 +1,1 @@
+psql -U postgres -d postgres -c "TRUNCATE TABLE category;"

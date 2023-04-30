@@ -11,8 +11,6 @@ import (
 
 	"github.com/fishmanDK/expenses/pkg/repository"
 	telegram "github.com/fishmanDK/expenses/pkg/telegram"
-	// "github.com/fishmanDK/expenses/pkg/telegram/bot"
-	// "github.com/fishmanDK/expenses/pkg/telegram/DB"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
@@ -42,6 +40,10 @@ func main() {
 		tgbotapi.NewKeyboardButtonRow(
 			tgbotapi.NewKeyboardButton("Добавить покупку"),
 			tgbotapi.NewKeyboardButton("Вывести все категории"),
+		),
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton("Удалить продукт"),
+			tgbotapi.NewKeyboardButton("Удалить категорию"),
 		),
 		tgbotapi.NewKeyboardButtonRow(
 			tgbotapi.NewKeyboardButton("Вывести список продуктов (в категории)"),
